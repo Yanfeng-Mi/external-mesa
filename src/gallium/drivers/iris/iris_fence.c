@@ -97,7 +97,7 @@ iris_syncobj_signal(struct iris_bufmgr *bufmgr, struct iris_syncobj *syncobj)
    };
 
    if (intel_ioctl(fd, DRM_IOCTL_SYNCOBJ_SIGNAL, &args)) {
-      fprintf(stderr, "failed to signal syncobj %"PRIu32"\n",
+      mesa_logw("failed to signal syncobj %"PRIu32"\n",
               syncobj->handle);
    }
 }
@@ -253,7 +253,7 @@ iris_fence_flush(struct pipe_context *ctx,
       ice->frame++;
 
       if (INTEL_DEBUG(DEBUG_SUBMIT)) {
-         fprintf(stderr, "%s ::: FRAME %-10u (ctx %p)%-35c%s\n",
+         mesa_logw("%s ::: FRAME %-10u (ctx %p)%-35c%s\n",
                  INTEL_DEBUG(DEBUG_COLOR) ? BLUE_HEADER : "",
                  ice->frame, ctx, ' ',
                  INTEL_DEBUG(DEBUG_COLOR) ? NORMAL : "");
@@ -536,7 +536,7 @@ iris_fence_create_fd(struct pipe_context *ctx,
    }
 
    if (intel_ioctl(screen->fd, DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE, &args) == -1) {
-      fprintf(stderr, "DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE failed: %s\n",
+      mesa_logw("DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE failed: %s\n",
               strerror(errno));
       if (type == PIPE_FD_TYPE_NATIVE_SYNC)
          gem_syncobj_destroy(screen->fd, args.handle);

@@ -55,6 +55,11 @@
 
 #include <errno.h>
 #include <xf86drm.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef HAVE_VALGRIND
 #include <valgrind.h>
@@ -65,6 +70,10 @@
 #endif
 
 #define FILE_DEBUG_FLAG DEBUG_BUFMGR
+
+FILE *g_log_file = NULL;
+FILE *create_log_file();
+void close_log_file(FILE**);
 
 static void
 iris_batch_reset(struct iris_batch *batch);
@@ -82,17 +91,17 @@ num_fences(struct iris_batch *batch)
 static void
 dump_fence_list(struct iris_batch *batch)
 {
-   fprintf(stderr, "Fence list (length %u):      ", num_fences(batch));
+   mesa_logw("Fence list (length %u):      ", num_fences(batch));
 
    util_dynarray_foreach(&batch->exec_fences,
                          struct drm_i915_gem_exec_fence, f) {
-      fprintf(stderr, "%s%u%s ",
+      mesa_logw("%s%u%s ",
               (f->flags & I915_EXEC_FENCE_WAIT) ? "..." : "",
               f->handle,
               (f->flags & I915_EXEC_FENCE_SIGNAL) ? "!" : "");
    }
 
-   fprintf(stderr, "\n");
+   mesa_logw(stderr, "\n");
 }
 
 /**
@@ -101,7 +110,7 @@ dump_fence_list(struct iris_batch *batch)
 static void
 dump_bo_list(struct iris_batch *batch)
 {
-   fprintf(stderr, "BO list (length %d):\n", batch->exec_count);
+   mesa_logw( "BO list (length %d):\n", batch->exec_count);
 
    for (int i = 0; i < batch->exec_count; i++) {
       struct iris_bo *bo = batch->exec_bos[i];
@@ -110,7 +119,7 @@ dump_bo_list(struct iris_batch *batch)
       bool exported = iris_bo_is_exported(bo);
       bool imported = iris_bo_is_imported(bo);
 
-      fprintf(stderr, "[%2d]: %3d (%3d) %-14s @ 0x%016"PRIx64" (%-15s %8"PRIu64"B) %2d refs %s%s%s\n",
+      mesa_logw("[%2d]: %3d (%3d) %-14s @ 0x%016"PRIx64" (%-15s %8"PRIu64"B) %2d refs %s%s%s\n",
               i,
               bo->gem_handle,
               backing->gem_handle,
@@ -235,7 +244,7 @@ iris_init_batch(struct iris_context *ice,
 
       intel_batch_decode_ctx_init(&batch->decoder, &screen->compiler->isa,
                                   screen->devinfo,
-                                  stderr, decode_flags, NULL,
+                                  g_log_file, decode_flags, NULL,
                                   decode_get_bo, decode_get_state_size, batch);
       batch->decoder.dynamic_base = IRIS_MEMZONE_DYNAMIC_START;
       batch->decoder.instruction_base = IRIS_MEMZONE_SHADER_START;
@@ -338,6 +347,12 @@ iris_init_batches(struct iris_context *ice, int priority)
    for (int i = 0; i < IRIS_BATCH_COUNT; i++)
       ice->batches[i].screen = (void *) ice->ctx.screen;
 
+   //if (INTEL_DEBUG(DEBUG_BATCH)) {
+   //   g_log_file = create_log_file();
+   //   if (!g_log_file) {
+   //      g_log_file = stderr;
+   //   }
+   //}
    if (!iris_init_engines_context(ice, priority))
       iris_init_non_engine_contexts(ice, priority);
    iris_foreach_batch(ice, batch)
@@ -607,6 +622,8 @@ iris_destroy_batches(struct iris_context *ice)
 {
    iris_foreach_batch(ice, batch)
       iris_batch_free(ice, batch);
+//if (INTEL_DEBUG(DEBUG_BATCH))
+//   close_log_file(&g_log_file);
 }
 
 /**
@@ -762,7 +779,7 @@ iris_batch_check_for_reset(struct iris_batch *batch)
    struct drm_i915_reset_stats stats = { .ctx_id = batch->ctx_id };
 
    if (intel_ioctl(screen->fd, DRM_IOCTL_I915_GET_RESET_STATS, &stats))
-      DBG("DRM_IOCTL_I915_GET_RESET_STATS failed: %s\n", strerror(errno));
+      mesa_logw("DRM_IOCTL_I915_GET_RESET_STATS failed: %s\n", strerror(errno));
 
    if (stats.batch_active != 0) {
       /* A reset was observed while a batch from this hardware context was
@@ -1037,7 +1054,7 @@ _iris_batch_flush(struct iris_batch *batch, const char *file, int line)
       if (basefile)
          file = basefile + 5;
 
-      fprintf(stderr, "%19s:%-3d: %s batch [%u] flush with %5db (%0.1f%%) "
+      mesa_logw("%19s:%-3d: %s batch [%u] flush with %5db (%0.1f%%) "
               "(cmds), %4d BOs (%0.1fMb aperture)\n",
               file, line, iris_batch_name_to_string(batch->name), batch->ctx_id,
               batch->total_chained_batch_size,
@@ -1078,7 +1095,7 @@ _iris_batch_flush(struct iris_batch *batch, const char *file, int line)
    util_dynarray_clear(&batch->exec_fences);
 
    if (INTEL_DEBUG(DEBUG_SYNC)) {
-      dbg_printf("waiting for idle\n");
+      mesa_logw("waiting for idle\n");
       iris_bo_wait_rendering(batch->bo); /* if execbuf failed; this is a nop */
    }
 
@@ -1104,11 +1121,12 @@ _iris_batch_flush(struct iris_batch *batch, const char *file, int line)
    }
 
    if (ret < 0) {
-#ifdef DEBUG
+
+if (INTEL_DEBUG(DEBUG_SUBMIT)) {
       const bool color = INTEL_DEBUG(DEBUG_COLOR);
-      fprintf(stderr, "%siris: Failed to submit batchbuffer: %-80s%s\n",
+      mesa_logw( "%siris: Failed to submit batchbuffer: %-80s%s\n",
               color ? "\e[1;41m" : "", strerror(-ret), color ? "\e[0m" : "");
-#endif
+}
       abort();
    }
 }
@@ -1146,4 +1164,42 @@ iris_batch_prepare_noop(struct iris_batch *batch, bool noop_enable)
     * not-noop.
     */
    return !batch->noop_enabled;
+}
+
+FILE *create_log_file()
+{
+   char file_name[128]= {0};
+#ifdef HAVE_ANDROID_PLATFORM
+   char dir_name[32] = "/data/local/tmp/mesa3d_intel";
+#else
+   char dir_name[32] = "/tmp/mesa3d_intel";
+#endif
+   time_t timep;
+   struct tm *p;
+   int tid, pid;
+   time(&timep);
+   p = gmtime(&timep);
+   FILE *f = NULL;
+
+   tid = gettid();
+   pid = getpid();
+
+   snprintf(file_name, 127, "%s/%04d%02d%02d%02d%02d%02d_%u_%u_mesa_batch.log", dir_name,
+          1900+p->tm_year, p->tm_mon, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec, pid, tid);
+   f = fopen(file_name, "a+");
+
+   mesa_logw("create log file %p %s, %p", p, file_name, f);
+   if (!f) {
+      mesa_logw("create file fail errno = %d reason = %s \n", errno, strerror(errno));
+   }
+   return f;
+}
+
+void close_log_file(FILE **file)
+{
+   if (*file != NULL && *file != stderr) {
+      mesa_logw("close log file");
+      fclose(*file);
+      *file = stderr;
+   }
 }
