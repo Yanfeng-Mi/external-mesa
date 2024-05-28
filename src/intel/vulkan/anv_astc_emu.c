@@ -15,6 +15,7 @@ astc_emu_init_image_view(struct anv_cmd_buffer *cmd_buffer,
                          VkImageUsageFlags usage,
                          uint32_t level, uint32_t layer)
 {
+   vk_trace();
    struct anv_device *device = cmd_buffer->device;
 
    const VkImageViewCreateInfo create_info = {
@@ -48,6 +49,7 @@ astc_emu_init_push_descriptor_set(struct anv_cmd_buffer *cmd_buffer,
                                   uint32_t write_count,
                                   const VkWriteDescriptorSet *writes)
 {
+   vk_trace();
    struct anv_device *device = cmd_buffer->device;
    struct anv_descriptor_set_layout *layout =
       anv_descriptor_set_layout_from_handle(_layout);
@@ -61,6 +63,7 @@ astc_emu_init_push_descriptor_set(struct anv_cmd_buffer *cmd_buffer,
 static void
 astc_emu_init_flush_denorm_shader(nir_builder *b)
 {
+   vk_trace();
    b->shader->info.workgroup_size[0] = 8;
    b->shader->info.workgroup_size[1] = 8;
 
@@ -145,6 +148,7 @@ astc_emu_init_flush_denorm_shader(nir_builder *b)
 static VkResult
 astc_emu_init_flush_denorm_pipeline_locked(struct anv_device *device)
 {
+   vk_trace();
    struct anv_device_astc_emu *astc_emu = &device->astc_emu;
    VkDevice _device = anv_device_to_handle(device);
    VkResult result = VK_SUCCESS;
@@ -226,6 +230,7 @@ out:
 static VkResult
 astc_emu_init_flush_denorm_pipeline(struct anv_device *device)
 {
+   vk_trace();
    struct anv_device_astc_emu *astc_emu = &device->astc_emu;
    VkResult result = VK_SUCCESS;
 
@@ -245,6 +250,7 @@ astc_emu_flush_denorm_slice(struct anv_cmd_buffer *cmd_buffer,
                             VkImageView dst_view,
                             VkRect2D rect)
 {
+   vk_trace();
    struct anv_device *device = cmd_buffer->device;
    struct anv_device_astc_emu *astc_emu = &device->astc_emu;
    VkCommandBuffer cmd_buffer_ = anv_cmd_buffer_to_handle(cmd_buffer);
@@ -337,6 +343,7 @@ astc_emu_decompress_slice(struct anv_cmd_buffer *cmd_buffer,
                           VkImageView dst_view,
                           VkRect2D rect)
 {
+   vk_trace();
    struct anv_device *device = cmd_buffer->device;
    struct anv_device_astc_emu *astc_emu = &device->astc_emu;
    VkCommandBuffer cmd_buffer_ = anv_cmd_buffer_to_handle(cmd_buffer);
@@ -416,6 +423,7 @@ anv_astc_emu_process(struct anv_cmd_buffer *cmd_buffer,
                      VkOffset3D block_offset,
                      VkExtent3D block_extent)
 {
+   vk_trace();
    const bool flush_denorms =
       cmd_buffer->device->physical->flush_astc_ldr_void_extent_denorms;
 
@@ -480,6 +488,7 @@ anv_astc_emu_process(struct anv_cmd_buffer *cmd_buffer,
 VkResult
 anv_device_init_astc_emu(struct anv_device *device)
 {
+   vk_trace();
    struct anv_device_astc_emu *astc_emu = &device->astc_emu;
    VkResult result = VK_SUCCESS;
 

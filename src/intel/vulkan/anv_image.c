@@ -1588,6 +1588,7 @@ VkResult
 anv_image_init(struct anv_device *device, struct anv_image *image,
                const struct anv_image_create_info *create_info)
 {
+   vk_trace();
    const VkImageCreateInfo *pCreateInfo = create_info->vk_info;
    const struct VkImageDrmFormatModifierExplicitCreateInfoEXT *mod_explicit_info = NULL;
    const struct isl_drm_modifier_info *isl_mod_info = NULL;
@@ -1852,6 +1853,7 @@ VkResult anv_CreateImage(
     const VkAllocationCallbacks*                pAllocator,
     VkImage*                                    pImage)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
 
    if (!device->physical->has_sparse &&
@@ -2035,6 +2037,7 @@ void anv_GetImageMemoryRequirements2(
     const VkImageMemoryRequirementsInfo2*       pInfo,
     VkMemoryRequirements2*                      pMemoryRequirements)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    ANV_FROM_HANDLE(anv_image, image, pInfo->image);
 
@@ -2065,6 +2068,7 @@ void anv_GetDeviceImageMemoryRequirements(
     const VkDeviceImageMemoryRequirements*   pInfo,
     VkMemoryRequirements2*                      pMemoryRequirements)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    struct anv_image image = { 0 };
 
@@ -2096,6 +2100,7 @@ anv_image_get_sparse_memory_requirements(
       uint32_t *pSparseMemoryRequirementCount,
       VkSparseImageMemoryRequirements2 *pSparseMemoryRequirements)
 {
+   vk_trace();
    VK_OUTARRAY_MAKE_TYPED(VkSparseImageMemoryRequirements2, reqs,
                           pSparseMemoryRequirements,
                           pSparseMemoryRequirementCount);
@@ -2174,6 +2179,7 @@ void anv_GetImageSparseMemoryRequirements2(
     uint32_t*                                   pSparseMemoryRequirementCount,
     VkSparseImageMemoryRequirements2*           pSparseMemoryRequirements)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    ANV_FROM_HANDLE(anv_image, image, pInfo->image);
 
@@ -2196,6 +2202,7 @@ void anv_GetDeviceImageSparseMemoryRequirements(
     uint32_t*                                   pSparseMemoryRequirementCount,
     VkSparseImageMemoryRequirements2*           pSparseMemoryRequirements)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    struct anv_image image = { 0 };
 
@@ -2243,6 +2250,7 @@ static bool
 anv_image_map_aux_tt(struct anv_device *device,
                      struct anv_image *image, uint32_t plane)
 {
+   vk_trace();
    const struct anv_address main_addr = anv_image_address(
       image, &image->planes[plane].primary_surface.memory_range);
    struct anv_bo *bo = main_addr.bo;
@@ -2275,6 +2283,7 @@ static VkResult
 anv_bind_image_memory(struct anv_device *device,
                       const VkBindImageMemoryInfo *bind_info)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device_memory, mem, bind_info->memory);
    ANV_FROM_HANDLE(anv_image, image, bind_info->image);
    bool did_bind = false;
@@ -2439,6 +2448,7 @@ VkResult anv_BindImageMemory2(
     uint32_t                                    bindInfoCount,
     const VkBindImageMemoryInfo*                pBindInfos)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    VkResult result = VK_SUCCESS;
 
@@ -2455,6 +2465,7 @@ static inline void
 get_image_fast_clear_layout(const struct anv_image *image,
                             VkSubresourceLayout *out_layout)
 {
+   vk_trace();
    /* If the memory binding differs between primary and fast clear
     * region, then the returned offset will be incorrect.
     */
@@ -2488,6 +2499,7 @@ anv_get_image_subresource_layout(const struct anv_image *image,
                                  const VkImageSubresource2KHR *subresource,
                                  VkSubresourceLayout2KHR *layout)
 {
+   vk_trace();
    const struct anv_image_memory_range *mem_range;
    const struct isl_surf *isl_surf;
 
@@ -2588,6 +2600,7 @@ void anv_GetImageSubresourceLayout(
     const VkImageSubresource*                   pSubresource,
     VkSubresourceLayout*                        pLayout)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_image, image, _image);
 
    VkImageSubresource2KHR subresource = {
@@ -2607,6 +2620,7 @@ void anv_GetDeviceImageSubresourceLayoutKHR(
     const VkDeviceImageSubresourceInfoKHR*      pInfo,
     VkSubresourceLayout2KHR*                    pLayout)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
 
    struct anv_image image = { 0 };
@@ -2626,6 +2640,7 @@ void anv_GetImageSubresourceLayout2KHR(
     const VkImageSubresource2KHR*               pSubresource,
     VkSubresourceLayout2KHR*                    pLayout)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_image, image, _image);
 
    anv_get_image_subresource_layout(image, pSubresource, pLayout);
@@ -2635,6 +2650,7 @@ static VkImageUsageFlags
 anv_image_flags_filter_for_queue(VkImageUsageFlags usages,
                                  VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    /* Eliminate graphics usages if the queue is not graphics capable */
    if (!(queue_flags & VK_QUEUE_GRAPHICS_BIT)) {
       usages &= ~(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
@@ -2686,6 +2702,7 @@ anv_layout_to_aux_state(const struct intel_device_info * const devinfo,
                         const VkImageLayout layout,
                         const VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    /* Validate the inputs. */
 
    /* The devinfo is needed as the optimal buffer varies across generations. */
@@ -2898,6 +2915,7 @@ anv_layout_to_aux_usage(const struct intel_device_info * const devinfo,
                         const VkImageLayout layout,
                         const VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    const uint32_t plane = anv_image_aspect_to_plane(image, aspect);
 
    /* If there is no auxiliary surface allocated, we must use the one and only
@@ -2965,6 +2983,7 @@ anv_layout_to_fast_clear_type(const struct intel_device_info * const devinfo,
                               const VkImageLayout layout,
                               const VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    if (INTEL_DEBUG(DEBUG_NO_FAST_CLEAR))
       return ANV_FAST_CLEAR_NONE;
 
@@ -3059,6 +3078,7 @@ anv_layout_has_untracked_aux_writes(const struct intel_device_info * const devin
                                     const VkImageLayout layout,
                                     const VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    const VkImageUsageFlags image_aspect_usage =
       vk_image_usage(&image->vk, aspect);
    const VkImageUsageFlags usage =
@@ -3088,6 +3108,7 @@ static struct anv_state
 maybe_alloc_surface_state(struct anv_device *device,
                           struct anv_state_stream *surface_state_stream)
 {
+   vk_trace();
    if (device->physical->indirect_descriptors) {
       if (surface_state_stream)
          return anv_state_stream_alloc(surface_state_stream, 64, 64);
@@ -3101,6 +3122,7 @@ static enum isl_channel_select
 remap_swizzle(VkComponentSwizzle swizzle,
               struct isl_swizzle format_swizzle)
 {
+   vk_trace();
    switch (swizzle) {
    case VK_COMPONENT_SWIZZLE_ZERO:  return ISL_CHANNEL_SELECT_ZERO;
    case VK_COMPONENT_SWIZZLE_ONE:   return ISL_CHANNEL_SELECT_ONE;
@@ -3124,6 +3146,7 @@ anv_image_fill_surface_state(struct anv_device *device,
                              enum anv_image_view_state_flags flags,
                              struct anv_surface_state *state_inout)
 {
+   vk_trace();
    uint32_t plane = anv_image_aspect_to_plane(image, aspect);
    if (image->emu_plane_format != VK_FORMAT_UNDEFINED) {
       const uint16_t view_bpb = isl_format_get_layout(view_in->format)->bpb;
@@ -3250,6 +3273,7 @@ anv_image_fill_surface_state(struct anv_device *device,
 static uint32_t
 anv_image_aspect_get_planes(VkImageAspectFlags aspect_mask)
 {
+   vk_trace();
    anv_assert_valid_aspect_set(aspect_mask);
    return util_bitcount(aspect_mask);
 }
@@ -3263,6 +3287,7 @@ anv_can_hiz_clear_ds_view(struct anv_device *device,
                           VkRect2D render_area,
                           const VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    if (INTEL_DEBUG(DEBUG_NO_FAST_CLEAR))
       return false;
 
@@ -3304,6 +3329,7 @@ isl_color_value_requires_conversion(union isl_color_value color,
                                     const struct isl_surf *surf,
                                     const struct isl_view *view)
 {
+   vk_trace();
    if (surf->format == view->format && isl_swizzle_is_identity(view->swizzle))
       return false;
 
@@ -3327,6 +3353,7 @@ anv_can_fast_clear_color_view(struct anv_device *device,
                               VkRect2D render_area,
                               const VkQueueFlagBits queue_flags)
 {
+   vk_trace();
    if (INTEL_DEBUG(DEBUG_NO_FAST_CLEAR))
       return false;
 
@@ -3419,6 +3446,7 @@ anv_image_view_init(struct anv_device *device,
                     const VkImageViewCreateInfo *pCreateInfo,
                     struct anv_state_stream *surface_state_stream)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_image, image, pCreateInfo->image);
 
    vk_image_view_init(&device->vk, &iview->vk, false, pCreateInfo);
@@ -3537,6 +3565,7 @@ anv_image_view_init(struct anv_device *device,
 void
 anv_image_view_finish(struct anv_image_view *iview)
 {
+   vk_trace();
    struct anv_device *device =
       container_of(iview->vk.base.device, struct anv_device, vk);
 
@@ -3568,11 +3597,13 @@ anv_CreateImageView(VkDevice _device,
                     const VkAllocationCallbacks *pAllocator,
                     VkImageView *pView)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    struct anv_image_view *iview;
 
    iview = vk_zalloc2(&device->vk.alloc, pAllocator, sizeof(*iview), 8,
                       VK_SYSTEM_ALLOCATION_SCOPE_OBJECT);
+
    if (iview == NULL)
       return vk_error(device, VK_ERROR_OUT_OF_HOST_MEMORY);
 
@@ -3587,6 +3618,7 @@ void
 anv_DestroyImageView(VkDevice _device, VkImageView _iview,
                      const VkAllocationCallbacks *pAllocator)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_image_view, iview, _iview);
 
    if (!iview)
@@ -3605,6 +3637,7 @@ anv_fill_buffer_view_surface_state(struct anv_device *device,
                                    struct anv_address address,
                                    uint32_t range, uint32_t stride)
 {
+   vk_trace();
    anv_fill_buffer_surface_state(device,
                                  state->state_data.data,
                                  format, swizzle,
@@ -3621,6 +3654,7 @@ anv_CreateBufferView(VkDevice _device,
                      const VkAllocationCallbacks *pAllocator,
                      VkBufferView *pView)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    ANV_FROM_HANDLE(anv_buffer, buffer, pCreateInfo->buffer);
    struct anv_buffer_view *view;
@@ -3679,6 +3713,7 @@ void
 anv_DestroyBufferView(VkDevice _device, VkBufferView bufferView,
                       const VkAllocationCallbacks *pAllocator)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_device, device, _device);
    ANV_FROM_HANDLE(anv_buffer_view, view, bufferView);
 
@@ -3703,6 +3738,7 @@ void anv_GetRenderingAreaGranularityKHR(
     const VkRenderingAreaInfoKHR*               pRenderingAreaInfo,
     VkExtent2D*                                 pGranularity)
 {
+   vk_trace();
    *pGranularity = (VkExtent2D) {
       .width = 1,
       .height = 1,

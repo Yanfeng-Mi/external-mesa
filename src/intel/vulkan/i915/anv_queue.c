@@ -36,6 +36,7 @@ anv_i915_create_engine(struct anv_device *device,
                        struct anv_queue *queue,
                        const VkDeviceQueueCreateInfo *pCreateInfo)
 {
+   vk_trace();
    struct anv_physical_device *physical = device->physical;
    struct anv_queue_family *queue_family =
       &physical->queue.families[pCreateInfo->queueFamilyIndex];

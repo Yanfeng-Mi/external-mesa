@@ -38,6 +38,7 @@ void *
 anv_gem_mmap(struct anv_device *device, struct anv_bo *bo, uint64_t offset,
              uint64_t size)
 {
+   vk_trace();
    void *map = device->kmd_backend->gem_mmap(device, bo, offset, size);
 
    if (map != MAP_FAILED)
@@ -52,6 +53,7 @@ anv_gem_mmap(struct anv_device *device, struct anv_bo *bo, uint64_t offset,
 void
 anv_gem_munmap(struct anv_device *device, void *p, uint64_t size)
 {
+   vk_trace();
    VG(VALGRIND_FREELIKE_BLOCK(p, 0));
    munmap(p, size);
 }
@@ -62,6 +64,7 @@ anv_gem_munmap(struct anv_device *device, void *p, uint64_t size)
 int
 anv_gem_wait(struct anv_device *device, uint32_t gem_handle, int64_t *timeout_ns)
 {
+   vk_trace();
    switch (device->info->kmd_type) {
    case INTEL_KMD_TYPE_I915:
       return anv_i915_gem_wait(device, gem_handle, timeout_ns);
@@ -77,6 +80,7 @@ anv_gem_wait(struct anv_device *device, uint32_t gem_handle, int64_t *timeout_ns
 int
 anv_gem_get_tiling(struct anv_device *device, uint32_t gem_handle)
 {
+   vk_trace();
    switch (device->info->kmd_type) {
    case INTEL_KMD_TYPE_I915:
       return anv_i915_gem_get_tiling(device, gem_handle);
@@ -92,6 +96,7 @@ int
 anv_gem_set_tiling(struct anv_device *device,
                    uint32_t gem_handle, uint32_t stride, uint32_t tiling)
 {
+   vk_trace();
    switch (device->info->kmd_type) {
    case INTEL_KMD_TYPE_I915:
       return anv_i915_gem_set_tiling(device, gem_handle, stride, tiling);
@@ -106,6 +111,7 @@ anv_gem_set_tiling(struct anv_device *device,
 int
 anv_gem_handle_to_fd(struct anv_device *device, uint32_t gem_handle)
 {
+   vk_trace();
    struct drm_prime_handle args = {
       .handle = gem_handle,
       .flags = DRM_CLOEXEC | DRM_RDWR,
@@ -121,6 +127,7 @@ anv_gem_handle_to_fd(struct anv_device *device, uint32_t gem_handle)
 uint32_t
 anv_gem_fd_to_handle(struct anv_device *device, int fd)
 {
+   vk_trace();
    struct drm_prime_handle args = {
       .fd = fd,
    };
@@ -138,6 +145,7 @@ anv_gem_import_bo_alloc_flags_to_bo_flags(struct anv_device *device,
                                           enum anv_bo_alloc_flags alloc_flags,
                                           uint32_t *bo_flags)
 {
+   vk_trace();
    switch (device->info->kmd_type) {
    case INTEL_KMD_TYPE_I915:
       return anv_i915_gem_import_bo_alloc_flags_to_bo_flags(device, bo,

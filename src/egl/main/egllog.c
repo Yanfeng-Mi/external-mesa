@@ -152,8 +152,8 @@ _eglLog(EGLint level, const char *fmtStr, ...)
    /* one-time initialization; a little race here is fine */
    if (!logging.initialized)
       _eglInitLogger();
-   if (level > logging.level || level < 0)
-      return;
+   //if (level > logging.level || level < 0)
+   //   return;
 
    simple_mtx_lock(&logging.mutex);
 

@@ -42,6 +42,7 @@ anv_descriptor_data_alignment(enum anv_descriptor_data data,
                               unsigned *out_surface_align,
                               unsigned *out_sampler_align)
 {
+   vk_trace();
    unsigned surface_align = 1, sampler_align = 1;
 
    if (data & (ANV_DESCRIPTOR_INDIRECT_SAMPLED_IMAGE |
@@ -75,6 +76,7 @@ anv_descriptor_data_alignment(enum anv_descriptor_data data,
 static enum anv_descriptor_data
 anv_indirect_descriptor_data_for_type(VkDescriptorType type)
 {
+   vk_trace();
    enum anv_descriptor_data data = 0;
 
    switch (type) {
@@ -141,6 +143,7 @@ static enum anv_descriptor_data
 anv_direct_descriptor_data_for_type(enum anv_descriptor_set_layout_type layout_type,
                                     VkDescriptorType type)
 {
+   vk_trace();
    enum anv_descriptor_data data = 0;
 
    switch (type) {

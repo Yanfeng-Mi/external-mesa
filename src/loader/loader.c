@@ -71,14 +71,20 @@
 #define PATH_MAX 4096
 #endif
 
+#include <log/log.h>
+#define LOG_TAG "MESA-LOADER"
+
 static void default_logger(int level, const char *fmt, ...)
 {
-   if (level <= _LOADER_WARNING) {
+   char msg[1000];
+   //if (level <= _LOADER_WARNING) 
+   {
       va_list args;
       va_start(args, fmt);
-      vfprintf(stderr, fmt, args);
+      vsnprintf(msg, 1000, fmt, args);
       va_end(args);
    }
+   LOG_PRI(ANDROID_LOG_ERROR, LOG_TAG, "%s", msg);
 }
 
 static loader_logger *log_ = default_logger;

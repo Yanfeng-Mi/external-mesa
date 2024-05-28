@@ -76,8 +76,23 @@ __vk_log_impl(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
               const char *format,
               ...);
 
+void PRINTFLIKE(5, 6)
+__vk_log_trace(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+              VkDebugUtilsMessageTypeFlagsEXT types,
+              const char *file,
+              int line,
+              const char *format,
+              ...);
+
+
 #define vk_error(obj, error) \
    __vk_errorf(obj, error, __FILE__, __LINE__, NULL)
+
+#define vk_trace() \
+   __vk_log_trace(VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT,  \
+                  VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT,  \
+                  __FILE__, __LINE__, "enter %s", __FUNCTION__)
+
 
 #define vk_errorf(obj, error, ...) \
    __vk_errorf(obj, error, __FILE__, __LINE__, __VA_ARGS__)

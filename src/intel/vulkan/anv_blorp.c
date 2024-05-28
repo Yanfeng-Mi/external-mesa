@@ -29,6 +29,7 @@ lookup_blorp_shader(struct blorp_batch *batch,
                     const void *key, uint32_t key_size,
                     uint32_t *kernel_out, void *prog_data_out)
 {
+   vk_trace();
    struct blorp_context *blorp = batch->blorp;
    struct anv_device *device = blorp->driver_ctx;
 
@@ -57,6 +58,7 @@ upload_blorp_shader(struct blorp_batch *batch, uint32_t stage,
                     uint32_t prog_data_size,
                     uint32_t *kernel_out, void *prog_data_out)
 {
+   vk_trace();
    struct blorp_context *blorp = batch->blorp;
    struct anv_device *device = blorp->driver_ctx;
 
@@ -91,6 +93,7 @@ upload_blorp_shader(struct blorp_batch *batch, uint32_t stage,
 void
 anv_device_init_blorp(struct anv_device *device)
 {
+   vk_trace();
    const struct blorp_config config = {
       .use_mesh_shading = device->vk.enabled_extensions.EXT_mesh_shader,
       .use_unrestricted_depth_range =
@@ -108,6 +111,7 @@ anv_device_init_blorp(struct anv_device *device)
 void
 anv_device_finish_blorp(struct anv_device *device)
 {
+   vk_trace();
    blorp_finish(&device->blorp);
 }
 
@@ -115,6 +119,7 @@ static void
 anv_blorp_batch_init(struct anv_cmd_buffer *cmd_buffer,
                      struct blorp_batch *batch, enum blorp_batch_flags flags)
 {
+   vk_trace();
    VkQueueFlags queue_flags = cmd_buffer->queue_family->queueFlags;
 
    if (queue_flags & VK_QUEUE_GRAPHICS_BIT) {
@@ -133,6 +138,7 @@ anv_blorp_batch_init(struct anv_cmd_buffer *cmd_buffer,
 static void
 anv_blorp_batch_finish(struct blorp_batch *batch)
 {
+   vk_trace();
    blorp_batch_finish(batch);
 }
 
@@ -145,6 +151,7 @@ get_blorp_surf_for_anv_address(struct anv_device *device,
                                struct blorp_surf *blorp_surf,
                                struct isl_surf *isl_surf)
 {
+   vk_trace();
    bool ok UNUSED;
 
    *blorp_surf = (struct blorp_surf) {
@@ -183,6 +190,7 @@ get_blorp_surf_for_anv_buffer(struct anv_device *device,
                               struct blorp_surf *blorp_surf,
                               struct isl_surf *isl_surf)
 {
+   vk_trace();
    get_blorp_surf_for_anv_address(device,
                                   anv_address_add(buffer->address, offset),
                                   width, height, row_pitch, format,
@@ -212,6 +220,7 @@ get_blorp_surf_for_anv_image(const struct anv_cmd_buffer *cmd_buffer,
                              enum isl_aux_usage aux_usage,
                              struct blorp_surf *blorp_surf)
 {
+   vk_trace();
    const struct anv_device *device = cmd_buffer->device;
    const uint32_t plane = anv_image_aspect_to_plane(image, aspect);
 
@@ -285,6 +294,7 @@ copy_image(struct anv_cmd_buffer *cmd_buffer,
            VkImageLayout dst_image_layout,
            const VkImageCopy2 *region)
 {
+   vk_trace();
    VkOffset3D srcOffset =
       vk_image_sanitize_offset(&src_image->vk, region->srcOffset);
    VkOffset3D dstOffset =
@@ -375,6 +385,7 @@ copy_image(struct anv_cmd_buffer *cmd_buffer,
 static struct anv_state
 record_main_rcs_cmd_buffer_done(struct anv_cmd_buffer *cmd_buffer)
 {
+   vk_trace();
    const struct intel_device_info *info = cmd_buffer->device->info;
 
    const VkResult result = anv_cmd_buffer_ensure_rcs_companion(cmd_buffer);
@@ -402,6 +413,7 @@ static void
 end_main_rcs_cmd_buffer_done(struct anv_cmd_buffer *cmd_buffer,
                              struct anv_state syncpoint)
 {
+   vk_trace();
    const struct intel_device_info *info = cmd_buffer->device->info;
    anv_genX(info, cmd_buffer_end_companion_rcs_syncpoint)(cmd_buffer,
                                                           syncpoint);
@@ -413,6 +425,7 @@ anv_blorp_blitter_execute_on_companion(struct anv_cmd_buffer *cmd_buffer,
                                        const VkCopyBufferToImageInfo2* pCopyBufferToImageInfo,
                                        const VkCopyImageToBufferInfo2* pCopyImageToBufferInfo)
 {
+   vk_trace();
    if (!anv_cmd_buffer_is_blitter_queue(cmd_buffer))
       return false;
 
@@ -460,6 +473,7 @@ static bool
 anv_blorp_execute_on_companion(struct anv_cmd_buffer *cmd_buffer,
                                struct anv_image *dst_image)
 {
+   vk_trace();
    /* MSAA images have to be dealt with on the companion RCS command buffer
     * for both CCS && BCS engines.
     */
@@ -482,6 +496,7 @@ void anv_CmdCopyImage2(
     VkCommandBuffer                             commandBuffer,
     const VkCopyImageInfo2*                     pCopyImageInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_image, src_image, pCopyImageInfo->srcImage);
    ANV_FROM_HANDLE(anv_image, dst_image, pCopyImageInfo->dstImage);
@@ -535,6 +550,7 @@ void anv_CmdCopyImage2(
 static enum isl_format
 isl_format_for_size(unsigned size_B)
 {
+   vk_trace();
    /* Prefer 32-bit per component formats for CmdFillBuffer */
    switch (size_B) {
    case 1:  return ISL_FORMAT_R8_UINT;
@@ -559,6 +575,7 @@ copy_buffer_to_image(struct anv_cmd_buffer *cmd_buffer,
                      const VkBufferImageCopy2* region,
                      bool buffer_to_image)
 {
+   vk_trace();
    struct {
       struct blorp_surf surf;
       uint32_t level;
@@ -658,6 +675,7 @@ void anv_CmdCopyBufferToImage2(
     VkCommandBuffer                             commandBuffer,
     const VkCopyBufferToImageInfo2*             pCopyBufferToImageInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_buffer, src_buffer, pCopyBufferToImageInfo->srcBuffer);
    ANV_FROM_HANDLE(anv_image, dst_image, pCopyBufferToImageInfo->dstImage);
@@ -723,6 +741,7 @@ static void
 anv_add_buffer_write_pending_bits(struct anv_cmd_buffer *cmd_buffer,
                                   const char *reason)
 {
+   vk_trace();
    const struct intel_device_info *devinfo = cmd_buffer->device->info;
 
    cmd_buffer->state.queries.buffer_write_bits |=
@@ -735,6 +754,7 @@ void anv_CmdCopyImageToBuffer2(
     VkCommandBuffer                             commandBuffer,
     const VkCopyImageToBufferInfo2*             pCopyImageToBufferInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_image, src_image, pCopyImageToBufferInfo->srcImage);
    ANV_FROM_HANDLE(anv_buffer, dst_buffer, pCopyImageToBufferInfo->dstBuffer);
@@ -806,6 +826,7 @@ blit_image(struct anv_cmd_buffer *cmd_buffer,
            const VkImageBlit2 *region,
            VkFilter filter)
 {
+   vk_trace();
    const VkImageSubresourceLayers *src_res = &region->srcSubresource;
    const VkImageSubresourceLayers *dst_res = &region->dstSubresource;
 
@@ -933,6 +954,7 @@ void anv_CmdBlitImage2(
     VkCommandBuffer                             commandBuffer,
     const VkBlitImageInfo2*                     pBlitImageInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_image, src_image, pBlitImageInfo->srcImage);
    ANV_FROM_HANDLE(anv_image, dst_image, pBlitImageInfo->dstImage);
@@ -978,6 +1000,7 @@ copy_buffer(struct anv_device *device,
             struct anv_buffer *dst_buffer,
             const VkBufferCopy2 *region)
 {
+   vk_trace();
    struct blorp_address src = {
       .buffer = src_buffer->address.bo,
       .offset = src_buffer->address.offset + region->srcOffset,
@@ -998,6 +1021,7 @@ void anv_CmdCopyBuffer2(
     VkCommandBuffer                             commandBuffer,
     const VkCopyBufferInfo2*                    pCopyBufferInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_buffer, src_buffer, pCopyBufferInfo->srcBuffer);
    ANV_FROM_HANDLE(anv_buffer, dst_buffer, pCopyBufferInfo->dstBuffer);
@@ -1023,6 +1047,7 @@ void anv_CmdUpdateBuffer(
     VkDeviceSize                                dataSize,
     const void*                                 pData)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_buffer, dst_buffer, dstBuffer);
 
@@ -1083,6 +1108,7 @@ anv_cmd_buffer_fill_area(struct anv_cmd_buffer *cmd_buffer,
                          VkDeviceSize size,
                          uint32_t data)
 {
+   vk_trace();
    struct blorp_surf surf;
    struct isl_surf isl_surf;
 
@@ -1163,6 +1189,7 @@ void anv_CmdFillBuffer(
     VkDeviceSize                                fillSize,
     uint32_t                                    data)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_buffer, dst_buffer, dstBuffer);
 
@@ -1193,6 +1220,7 @@ void anv_CmdClearColorImage(
     uint32_t                                    rangeCount,
     const VkImageSubresourceRange*              pRanges)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_image, image, _image);
 
@@ -1266,6 +1294,7 @@ void anv_CmdClearDepthStencilImage(
     uint32_t                                    rangeCount,
     const VkImageSubresourceRange*              pRanges)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_image, image, image_h);
 
@@ -1331,6 +1360,7 @@ anv_cmd_buffer_alloc_blorp_binding_table(struct anv_cmd_buffer *cmd_buffer,
                                          uint32_t *state_offset,
                                          struct anv_state *bt_state)
 {
+   vk_trace();
    *bt_state = anv_cmd_buffer_alloc_binding_table(cmd_buffer, num_entries,
                                                   state_offset);
    if (bt_state->map == NULL) {
@@ -1357,6 +1387,7 @@ binding_table_for_surface_state(struct anv_cmd_buffer *cmd_buffer,
                                 struct anv_state surface_state,
                                 uint32_t *bt_offset)
 {
+   vk_trace();
    uint32_t state_offset;
    struct anv_state bt_state;
 
@@ -1380,6 +1411,7 @@ can_fast_clear_color_att(struct anv_cmd_buffer *cmd_buffer,
                          const VkClearAttachment *attachment,
                          uint32_t rectCount, const VkClearRect *pRects)
 {
+   vk_trace();
    union isl_color_value clear_color =
       vk_to_isl_color(attachment->clearValue.color);
 
@@ -1425,6 +1457,7 @@ exec_ccs_op(struct anv_cmd_buffer *cmd_buffer,
             uint32_t base_layer, uint32_t layer_count,
             enum isl_aux_op ccs_op, union isl_color_value *clear_value)
 {
+   vk_trace();
    assert(image->vk.aspects & VK_IMAGE_ASPECT_ANY_COLOR_BIT_ANV);
    assert(image->vk.samples == 1);
    assert(level < anv_image_aux_levels(image, aspect));
@@ -1592,6 +1625,7 @@ exec_mcs_op(struct anv_cmd_buffer *cmd_buffer,
             uint32_t base_layer, uint32_t layer_count,
             enum isl_aux_op mcs_op, union isl_color_value *clear_value)
 {
+   vk_trace();
    assert(image->vk.aspects == VK_IMAGE_ASPECT_COLOR_BIT);
    assert(image->vk.samples > 1);
    assert(base_layer + layer_count <= anv_image_aux_layers(image, aspect, 0));
@@ -1729,6 +1763,7 @@ clear_color_attachment(struct anv_cmd_buffer *cmd_buffer,
                        const VkClearAttachment *attachment,
                        uint32_t rectCount, const VkClearRect *pRects)
 {
+   vk_trace();
    struct anv_cmd_graphics_state *gfx = &cmd_buffer->state.gfx;
    const uint32_t att_idx = attachment->colorAttachment;
    assert(att_idx < gfx->color_att_count);
@@ -1819,6 +1854,7 @@ anv_fast_clear_depth_stencil(struct anv_cmd_buffer *cmd_buffer,
                              uint32_t base_layer, uint32_t layer_count,
                              VkRect2D area, uint8_t stencil_value)
 {
+   vk_trace();
    assert(image->vk.aspects & (VK_IMAGE_ASPECT_DEPTH_BIT |
                                VK_IMAGE_ASPECT_STENCIL_BIT));
 
@@ -2077,6 +2113,7 @@ void anv_CmdClearAttachments(
     uint32_t                                    rectCount,
     const VkClearRect*                          pRects)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
 
    /* Because this gets called within a render pass, we tell blorp not to
@@ -2121,6 +2158,7 @@ anv_image_msaa_resolve(struct anv_cmd_buffer *cmd_buffer,
                        uint32_t layer_count,
                        enum blorp_filter filter)
 {
+   vk_trace();
    struct blorp_batch batch;
    anv_blorp_batch_init(cmd_buffer, &batch, 0);
    assert((batch.flags & BLORP_BATCH_USE_COMPUTE) == 0);
@@ -2183,6 +2221,7 @@ resolve_image(struct anv_cmd_buffer *cmd_buffer,
               VkImageLayout dst_image_layout,
               const VkImageResolve2 *region)
 {
+   vk_trace();
    assert(region->srcSubresource.aspectMask == region->dstSubresource.aspectMask);
    assert(vk_image_subresource_layer_count(&src_image->vk, &region->srcSubresource) ==
           vk_image_subresource_layer_count(&dst_image->vk, &region->dstSubresource));
@@ -2227,6 +2266,7 @@ void anv_CmdResolveImage2(
     VkCommandBuffer                             commandBuffer,
     const VkResolveImageInfo2*                  pResolveImageInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_image, src_image, pResolveImageInfo->srcImage);
    ANV_FROM_HANDLE(anv_image, dst_image, pResolveImageInfo->dstImage);
@@ -2248,6 +2288,7 @@ anv_image_clear_color(struct anv_cmd_buffer *cmd_buffer,
                       uint32_t level, uint32_t base_layer, uint32_t layer_count,
                       VkRect2D area, union isl_color_value clear_color)
 {
+   vk_trace();
    assert(image->vk.aspects == VK_IMAGE_ASPECT_COLOR_BIT);
 
    /* We don't support planar images with multisampling yet */
@@ -2284,6 +2325,7 @@ anv_image_clear_depth_stencil(struct anv_cmd_buffer *cmd_buffer,
                               VkRect2D area,
                               float depth_value, uint8_t stencil_value)
 {
+   vk_trace();
    assert(image->vk.aspects & (VK_IMAGE_ASPECT_DEPTH_BIT |
                                VK_IMAGE_ASPECT_STENCIL_BIT));
 
@@ -2347,6 +2389,7 @@ anv_image_hiz_op(struct anv_cmd_buffer *cmd_buffer,
                  uint32_t base_layer, uint32_t layer_count,
                  enum isl_aux_op hiz_op)
 {
+   vk_trace();
    assert(aspect == VK_IMAGE_ASPECT_DEPTH_BIT);
    assert(base_layer + layer_count <= anv_image_aux_layers(image, aspect, level));
    const uint32_t plane = anv_image_aspect_to_plane(image, aspect);

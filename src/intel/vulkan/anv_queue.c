@@ -35,6 +35,7 @@ anv_create_engine(struct anv_device *device,
                   struct anv_queue *queue,
                   const VkDeviceQueueCreateInfo *pCreateInfo)
 {
+   vk_trace();
    switch (device->info->kmd_type) {
    case INTEL_KMD_TYPE_I915:
       return anv_i915_create_engine(device, queue, pCreateInfo);
@@ -49,6 +50,7 @@ anv_create_engine(struct anv_device *device,
 static void
 anv_destroy_engine(struct anv_queue *queue)
 {
+   vk_trace();
    struct anv_device *device = queue->device;
    switch (device->info->kmd_type) {
    case INTEL_KMD_TYPE_I915:
@@ -67,6 +69,7 @@ anv_queue_init(struct anv_device *device, struct anv_queue *queue,
                const VkDeviceQueueCreateInfo *pCreateInfo,
                uint32_t index_in_family)
 {
+   vk_trace();
    struct anv_physical_device *pdevice = device->physical;
    assert(queue->vk.queue_family_index < pdevice->queue.family_count);
    struct anv_queue_family *queue_family =
@@ -116,6 +119,7 @@ anv_queue_init(struct anv_device *device, struct anv_queue *queue,
 void
 anv_queue_finish(struct anv_queue *queue)
 {
+   vk_trace();
    if (queue->sync)
       vk_sync_destroy(&queue->device->vk, queue->sync);
 

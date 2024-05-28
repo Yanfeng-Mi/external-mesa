@@ -44,6 +44,7 @@
 static void
 anv_cmd_state_init(struct anv_cmd_buffer *cmd_buffer)
 {
+   vk_trace();
    struct anv_cmd_state *state = &cmd_buffer->state;
 
    memset(state, 0, sizeof(*state));
@@ -68,6 +69,7 @@ anv_cmd_pipeline_state_finish(struct anv_cmd_buffer *cmd_buffer,
 static void
 anv_cmd_state_finish(struct anv_cmd_buffer *cmd_buffer)
 {
+   vk_trace();
    struct anv_cmd_state *state = &cmd_buffer->state;
 
    anv_cmd_pipeline_state_finish(cmd_buffer, &state->gfx.base);
@@ -87,6 +89,7 @@ anv_cmd_state_reset(struct anv_cmd_buffer *cmd_buffer)
 VkResult
 anv_cmd_buffer_ensure_rcs_companion(struct anv_cmd_buffer *cmd_buffer)
 {
+   vk_trace();
    if (cmd_buffer->companion_rcs_cmd_buffer)
       return VK_SUCCESS;
 
@@ -116,6 +119,7 @@ static VkResult
 anv_create_cmd_buffer(struct vk_command_pool *pool,
                       struct vk_command_buffer **cmd_buffer_out)
 {
+   vk_trace();
    struct anv_device *device =
       container_of(pool->base.device, struct anv_device, vk);
    struct anv_cmd_buffer *cmd_buffer;
@@ -199,6 +203,7 @@ anv_create_cmd_buffer(struct vk_command_pool *pool,
 static void
 destroy_cmd_buffer(struct anv_cmd_buffer *cmd_buffer)
 {
+   vk_trace();
    u_trace_fini(&cmd_buffer->trace);
 
    anv_measure_destroy(cmd_buffer);
@@ -229,6 +234,7 @@ destroy_cmd_buffer(struct anv_cmd_buffer *cmd_buffer)
 static void
 anv_cmd_buffer_destroy(struct vk_command_buffer *vk_cmd_buffer)
 {
+   vk_trace();
    struct anv_cmd_buffer *cmd_buffer =
       container_of(vk_cmd_buffer, struct anv_cmd_buffer, vk);
    struct anv_device *device = cmd_buffer->device;
@@ -247,6 +253,7 @@ static void
 reset_cmd_buffer(struct anv_cmd_buffer *cmd_buffer,
                  UNUSED VkCommandBufferResetFlags flags)
 {
+   vk_trace();
    vk_command_buffer_reset(&cmd_buffer->vk);
 
    cmd_buffer->usage_flags = 0;
@@ -293,6 +300,7 @@ void
 anv_cmd_buffer_reset(struct vk_command_buffer *vk_cmd_buffer,
                      UNUSED VkCommandBufferResetFlags flags)
 {
+   vk_trace();
    struct anv_cmd_buffer *cmd_buffer =
       container_of(vk_cmd_buffer, struct anv_cmd_buffer, vk);
 
@@ -429,6 +437,7 @@ anv_cmd_buffer_set_ray_query_buffer(struct anv_cmd_buffer *cmd_buffer,
                                     struct anv_pipeline *pipeline,
                                     VkShaderStageFlags stages)
 {
+   vk_trace();
    struct anv_device *device = cmd_buffer->device;
 
    uint64_t ray_shadow_size =
@@ -494,6 +503,7 @@ anv_cmd_buffer_flush_pipeline_state(struct anv_cmd_buffer *cmd_buffer,
                                     struct anv_graphics_pipeline *old_pipeline,
                                     struct anv_graphics_pipeline *new_pipeline)
 {
+   vk_trace();
    struct anv_cmd_graphics_state *gfx = &cmd_buffer->state.gfx;
    struct anv_gfx_dynamic_state *hw_state = &gfx->dyn_state;
 
@@ -609,6 +619,7 @@ void anv_CmdBindPipeline(
     VkPipelineBindPoint                         pipelineBindPoint,
     VkPipeline                                  _pipeline)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_pipeline, pipeline, _pipeline);
    struct anv_cmd_pipeline_state *state;
@@ -736,6 +747,7 @@ anv_cmd_buffer_bind_descriptor_set(struct anv_cmd_buffer *cmd_buffer,
                                    uint32_t *dynamic_offset_count,
                                    const uint32_t **dynamic_offsets)
 {
+   vk_trace();
    /* Either we have no pool because it's a push descriptor or the pool is not
     * host only :
     *
@@ -893,6 +905,7 @@ void anv_CmdBindDescriptorSets2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkBindDescriptorSetsInfoKHR*          pInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    ANV_FROM_HANDLE(anv_pipeline_layout, pipeline_layout, pInfo->layout);
    struct anv_pipeline_sets_layout *layout = &pipeline_layout->sets_layout;
@@ -955,6 +968,7 @@ void anv_CmdBindVertexBuffers2(
    const VkDeviceSize*                          pSizes,
    const VkDeviceSize*                          pStrides)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    struct anv_vertex_binding *vb = cmd_buffer->state.vertex_bindings;
 
@@ -994,6 +1008,7 @@ void anv_CmdBindTransformFeedbackBuffersEXT(
     const VkDeviceSize*                         pOffsets,
     const VkDeviceSize*                         pSizes)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    struct anv_xfb_binding *xfb = cmd_buffer->state.xfb_bindings;
 
@@ -1019,6 +1034,7 @@ enum isl_format
 anv_isl_format_for_descriptor_type(const struct anv_device *device,
                                    VkDescriptorType type)
 {
+   vk_trace();
    switch (type) {
    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
@@ -1085,6 +1101,7 @@ anv_cmd_buffer_gfx_push_constants(struct anv_cmd_buffer *cmd_buffer)
 struct anv_state
 anv_cmd_buffer_cs_push_constants(struct anv_cmd_buffer *cmd_buffer)
 {
+   vk_trace();
    const struct intel_device_info *devinfo = cmd_buffer->device->info;
    struct anv_cmd_pipeline_state *pipe_state = &cmd_buffer->state.compute.base;
    struct anv_push_constants *data = &pipe_state->push_constants;
@@ -1145,6 +1162,7 @@ void anv_CmdPushConstants2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkPushConstantsInfoKHR*               pInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
 
    if (pInfo->stageFlags & ANV_GRAPHICS_STAGE_BITS) {
@@ -1194,6 +1212,7 @@ anv_cmd_buffer_push_descriptor_sets(struct anv_cmd_buffer *cmd_buffer,
                                     VkPipelineBindPoint bind_point,
                                     const VkPushDescriptorSetInfoKHR *pInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_pipeline_layout, pipeline_layout, pInfo->layout);
    struct anv_pipeline_sets_layout *layout = &pipeline_layout->sets_layout;
 
@@ -1220,6 +1239,7 @@ void anv_CmdPushDescriptorSet2KHR(
     VkCommandBuffer                            commandBuffer,
     const VkPushDescriptorSetInfoKHR*          pInfo)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
 
    if (pInfo->stageFlags & VK_SHADER_STAGE_COMPUTE_BIT)
@@ -1269,6 +1289,7 @@ void anv_CmdSetRayTracingPipelineStackSizeKHR(
     VkCommandBuffer                             commandBuffer,
     uint32_t                                    pipelineStackSize)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_cmd_buffer, cmd_buffer, commandBuffer);
    struct anv_cmd_ray_tracing_state *rt = &cmd_buffer->state.rt;
    struct anv_device *device = cmd_buffer->device;
@@ -1321,6 +1342,7 @@ anv_cmd_buffer_save_state(struct anv_cmd_buffer *cmd_buffer,
                           uint32_t flags,
                           struct anv_cmd_saved_state *state)
 {
+   vk_trace();
    state->flags = flags;
 
    /* we only support the compute pipeline at the moment */
@@ -1344,6 +1366,7 @@ void
 anv_cmd_buffer_restore_state(struct anv_cmd_buffer *cmd_buffer,
                              struct anv_cmd_saved_state *state)
 {
+   vk_trace();
    VkCommandBuffer cmd_buffer_ = anv_cmd_buffer_to_handle(cmd_buffer);
 
    assert(state->flags & ANV_CMD_SAVED_STATE_COMPUTE_PIPELINE);

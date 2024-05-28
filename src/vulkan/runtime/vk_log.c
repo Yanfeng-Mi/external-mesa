@@ -73,6 +73,51 @@ vk_object_to_instance(struct vk_object_base *obj)
    }
 }
 
+void __vk_log_trace(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+              VkDebugUtilsMessageTypeFlagsEXT types,
+              const char *file,
+              int line,
+              const char *format,
+              ...)
+{
+   va_list va;
+   char *message = NULL;
+
+   va_start(va, format);
+   message = ralloc_vasprintf(NULL, format, va);
+   va_end(va);
+
+   char *message_idname = ralloc_asprintf(NULL, "%s:%d", file, line);
+
+#if DEBUG
+   switch (severity) {
+   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+      mesa_logd("%s: %s", message_idname, message);
+      break;
+   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+      mesa_logi("%s: %s", message_idname, message);
+      break;
+   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+      if (types & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+         mesa_logw("%s: PERF: %s", message_idname, message);
+      else
+         mesa_logw("%s: %s", message_idname, message);
+      break;
+   case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+      mesa_loge("%s: %s", message_idname, message);
+      break;
+   default:
+      unreachable("Invalid debug message severity");
+      break;
+   }
+
+
+   ralloc_free(message);
+   ralloc_free(message_idname);
+   return;
+#endif
+}
+
 void
 __vk_log_impl(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
               VkDebugUtilsMessageTypeFlagsEXT types,

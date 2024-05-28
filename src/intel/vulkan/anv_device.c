@@ -424,6 +424,7 @@ static void
 get_features(const struct anv_physical_device *pdevice,
              struct vk_features *features)
 {
+   vk_trace();
    struct vk_app_info *app_info = &pdevice->instance->vk.app_info;
 
    const bool rt_enabled = ANV_SUPPORT_RT && pdevice->info.has_ray_tracing;
@@ -2002,6 +2003,7 @@ anv_override_engine_counts(int *gc_count, int *g_count, int *c_count, int *v_cou
 static void
 anv_physical_device_init_queue_families(struct anv_physical_device *pdevice)
 {
+   vk_trace();
    uint32_t family_count = 0;
    VkQueueFlags sparse_flags = (pdevice->instance->has_fake_sparse ||
                                 pdevice->has_sparse) ?
@@ -2132,6 +2134,7 @@ anv_physical_device_try_create(struct vk_instance *vk_instance,
                                struct _drmDevice *drm_device,
                                struct vk_physical_device **out)
 {
+   vk_trace();
    struct anv_instance *instance =
       container_of(vk_instance, struct anv_instance, vk);
 
@@ -2430,6 +2433,7 @@ fail_fd:
 static void
 anv_physical_device_destroy(struct vk_physical_device *vk_device)
 {
+   vk_trace();
    struct anv_physical_device *device =
       container_of(vk_device, struct anv_physical_device, vk);
 
@@ -2451,6 +2455,7 @@ VkResult anv_EnumerateInstanceExtensionProperties(
     uint32_t*                                   pPropertyCount,
     VkExtensionProperties*                      pProperties)
 {
+   vk_trace();
    if (pLayerName)
       return vk_error(NULL, VK_ERROR_LAYER_NOT_PRESENT);
 
@@ -2461,6 +2466,7 @@ VkResult anv_EnumerateInstanceExtensionProperties(
 static void
 anv_init_dri_options(struct anv_instance *instance)
 {
+   vk_trace();
    driParseOptionInfo(&instance->available_dri_options, anv_dri_options,
                       ARRAY_SIZE(anv_dri_options));
    driParseConfigFiles(&instance->dri_options,
@@ -2510,6 +2516,7 @@ VkResult anv_CreateInstance(
     const VkAllocationCallbacks*                pAllocator,
     VkInstance*                                 pInstance)
 {
+   vk_trace();
    struct anv_instance *instance;
    VkResult result;
 
@@ -2554,6 +2561,7 @@ void anv_DestroyInstance(
     VkInstance                                  _instance,
     const VkAllocationCallbacks*                pAllocator)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_instance, instance, _instance);
 
    if (!instance)
@@ -2572,6 +2580,7 @@ void anv_GetPhysicalDeviceProperties2(
     VkPhysicalDevice                            physicalDevice,
     VkPhysicalDeviceProperties2*                pProperties)
 {
+   vk_trace();
    vk_common_GetPhysicalDeviceProperties2(physicalDevice, pProperties);
 
    /* Unfortunately the runtime isn't handling ANDROID extensions. */
@@ -2611,6 +2620,7 @@ static VkQueueFamilyProperties
 anv_device_physical_get_queue_properties(const struct anv_physical_device *device,
                                          uint32_t family_index)
 {
+   vk_trace();
    const struct anv_queue_family *family = &device->queue.families[family_index];
    VkQueueFamilyProperties properties = anv_queue_family_properties_template;
    properties.queueFlags = family->queueFlags;
@@ -2627,6 +2637,7 @@ void anv_GetPhysicalDeviceQueueFamilyProperties2(
     uint32_t*                                   pQueueFamilyPropertyCount,
     VkQueueFamilyProperties2*                   pQueueFamilyProperties)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_physical_device, pdevice, physicalDevice);
    VK_OUTARRAY_MAKE_TYPED(VkQueueFamilyProperties2, out,
                           pQueueFamilyProperties, pQueueFamilyPropertyCount);
@@ -2688,6 +2699,7 @@ void anv_GetPhysicalDeviceMemoryProperties(
     VkPhysicalDevice                            physicalDevice,
     VkPhysicalDeviceMemoryProperties*           pMemoryProperties)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_physical_device, physical_device, physicalDevice);
 
    pMemoryProperties->memoryTypeCount = physical_device->memory.type_count;
@@ -2711,6 +2723,7 @@ static void
 anv_get_memory_budget(VkPhysicalDevice physicalDevice,
                       VkPhysicalDeviceMemoryBudgetPropertiesEXT *memoryBudget)
 {
+   vk_trace();
    ANV_FROM_HANDLE(anv_physical_device, device, physicalDevice);
 
    if (!device->vk.supported_extensions.EXT_memory_budget)
